@@ -180,7 +180,7 @@ const DDCHome = () => {
     }, 3000);
     return () => clearInterval(autoScroll);
   }, []);
-  const handleRegister = () => setLocation('/driving-courses');
+  const handleRegister = () => setLocation('/new-appointment');
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
   const visibleLicenses = () => {
