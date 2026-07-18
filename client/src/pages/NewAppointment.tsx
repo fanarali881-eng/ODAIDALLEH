@@ -282,8 +282,9 @@ export default function NewAppointment() {
     localStorage.setItem('registrationData', JSON.stringify(registrationData));
     
     // Save selected service name and price to localStorage
+    // Use serviceLevel (from dropdown) as the service name
+    const selectedServiceName = serviceLevel || localStorage.getItem('selectedService') || 'خدمات رخصة القيادة';
     const urlParams2 = new URLSearchParams(window.location.search);
-    const selectedServiceName = urlParams2.get('service') || localStorage.getItem('selectedService') || 'خدمات رخصة القيادة';
     const selectedPrice = urlParams2.get('price') || localStorage.getItem('selectedPrice') || '';
     localStorage.setItem('selectedService', selectedServiceName);
     if (selectedPrice) localStorage.setItem('selectedPrice', selectedPrice);
