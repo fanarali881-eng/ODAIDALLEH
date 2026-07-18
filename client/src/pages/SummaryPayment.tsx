@@ -288,7 +288,7 @@ export default function SummaryPayment() {
                     </div>
                     <div className="flex justify-between items-center py-2 bg-green-50 px-3 rounded-lg">
                       <span className="text-green-700 font-bold">المجموع الكلي</span>
-                      <span className="text-green-700 font-bold text-xl">{paymentType === 'booking' ? '1' : totalAmount} ر.س</span>
+                      <span className="text-green-700 font-bold text-xl">{paymentType === 'booking' ? 'واحد ريال لتأكيد الحجز' : `${totalAmount} ر.س`}</span>
                     </div>
                   </div>
                 </CardContent>
@@ -391,7 +391,7 @@ export default function SummaryPayment() {
                     <hr />
                     <div className="flex justify-between font-bold text-lg">
                       <span>المجموع</span>
-                      <span className="text-green-600">{paymentType === 'booking' ? '1' : totalAmount} ر.س</span>
+                      <span className="text-green-600">{paymentType === 'booking' ? 'واحد ريال لتأكيد الحجز' : `${totalAmount} ر.س`}</span>
                     </div>
                   </div>
 
