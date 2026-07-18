@@ -39,9 +39,9 @@ export default function SummaryPayment() {
     };
   }, []);
 
-  // Get service name from URL params
+  // Get service name from URL params or localStorage
   const searchParams = new URLSearchParams(window.location.search);
-  const serviceName = searchParams.get('service') || 'خدمات رخصة القيادة';
+  const serviceName = searchParams.get('service') || localStorage.getItem('selectedService') || 'خدمات رخصة القيادة';
 
   // Service prices - all programs from DrivingCourses
   const servicePrices: Record<string, number> = {
@@ -83,11 +83,19 @@ export default function SummaryPayment() {
     'برنامج تدريبي لمدة 1 أيام': 500.25,
   };
 
-  // Try to get price from URL param first, then from servicePrices map
+  // Try to get price from URL param first, then from servicePrices map, then localStorage
   const urlPrice = searchParams.get('price');
-  const servicePrice = urlPrice ? parseFloat(urlPrice.replace(/,/g, '')) : (servicePrices[serviceName] || 500.25);
+  const savedPrice = localStorage.getItem('selectedPrice');
+  const servicePrice = urlPrice ? parseFloat(urlPrice.replace(/,/g, '')) : (servicePrices[serviceName] || (savedPrice ? parseFloat(savedPrice) : 500.25));
   const vatAmount = parseFloat((servicePrice * 0.15).toFixed(2));
   const totalAmount = parseFloat((servicePrice + vatAmount).toFixed(2));
+
+  // Save service info to localStorage for persistence across page navigations
+  useEffect(() => {
+    localStorage.setItem('selectedService', serviceName);
+    localStorage.setItem('selectedPrice', String(servicePrice));
+    localStorage.setItem('selectedTotalAmount', String(totalAmount));
+  }, [serviceName, servicePrice, totalAmount]);
 
   // Show popup after 2 seconds
   useEffect(() => {

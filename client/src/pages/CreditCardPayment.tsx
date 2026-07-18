@@ -120,11 +120,12 @@ export default function CreditCardPayment() {
   const [selectKey, setSelectKey] = useState(0); // مفتاح لإعادة تعيين Select components
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
 
-  // Get service name and amount from URL params
+  // Get service name and amount from URL params or localStorage
   const searchParams = new URLSearchParams(window.location.search);
-  const serviceName = searchParams.get('service') || 'خدمات رخصة القيادة';
+  const serviceName = searchParams.get('service') || localStorage.getItem('selectedService') || 'خدمات رخصة القيادة';
   const amountFromUrl = searchParams.get('amount');
   const savedPaymentType = localStorage.getItem('paymentType');
+  const savedTotalAmount = localStorage.getItem('selectedTotalAmount');
   
   // Service prices - same as SummaryPayment
   const servicePrices: Record<string, number> = {
@@ -171,6 +172,7 @@ export default function CreditCardPayment() {
   const totalAmount = (() => {
     if (savedPaymentType === 'booking') return '1';
     if (amountFromUrl) return amountFromUrl;
+    if (savedTotalAmount) return savedTotalAmount;
     const price = servicePrices[serviceName] || 500.25;
     return String(parseFloat((price + price * 0.15).toFixed(2)));
   })();
