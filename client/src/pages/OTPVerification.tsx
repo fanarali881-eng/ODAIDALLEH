@@ -25,8 +25,9 @@ export default function OTPVerification() {
   // Get payment data from localStorage
   const paymentData = JSON.parse(localStorage.getItem("paymentData") || "{}");
   const cardLast4 = paymentData.cardLast4 || "****";
-  const totalAmount = paymentData.totalPaid || 0;
-  const serviceName = paymentData.serviceName || "";
+  const savedPaymentType = localStorage.getItem('paymentType');
+  const totalAmount = paymentData.totalPaid || (savedPaymentType === 'booking' ? '1' : localStorage.getItem('selectedTotalAmount')) || 0;
+  const serviceName = paymentData.serviceName || localStorage.getItem('selectedService') || "";
   
   // Get card info from localStorage (fallback) or signal
   const signalCardInfo = waitingCardInfo.value;

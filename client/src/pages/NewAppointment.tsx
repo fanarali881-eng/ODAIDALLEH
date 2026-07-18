@@ -279,18 +279,19 @@ export default function NewAppointment() {
     // Save registration data for preview document
     localStorage.setItem('registrationData', JSON.stringify(registrationData));
     
-    // Save selected service name for nafath page
+    // Save selected service name and price to localStorage
     const urlParams2 = new URLSearchParams(window.location.search);
-    const selectedServiceName = urlParams2.get('service') || 'خدمات رخصة القيادة';
+    const selectedServiceName = urlParams2.get('service') || localStorage.getItem('selectedService') || 'خدمات رخصة القيادة';
+    const selectedPrice = urlParams2.get('price') || localStorage.getItem('selectedPrice') || '';
     localStorage.setItem('selectedService', selectedServiceName);
+    if (selectedPrice) localStorage.setItem('selectedPrice', selectedPrice);
     
     // Show spinner and navigate after 3 seconds
     setIsSubmitting(true);
     setTimeout(() => {
-      // Pass service name and price from URL params
-      const urlParams = new URLSearchParams(window.location.search);
-      const service = urlParams.get('service') || '';
-      const price = urlParams.get('price') || '';
+      // Use URL params first, then localStorage as fallback
+      const service = selectedServiceName;
+      const price = selectedPrice;
       if (service && price) {
         clientNavigate(`/summary-payment?service=${encodeURIComponent(service)}&price=${price}`);
       } else {

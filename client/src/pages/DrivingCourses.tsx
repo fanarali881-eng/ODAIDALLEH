@@ -355,6 +355,9 @@ const DrivingCourses = () => {
 
   const handleRegister = (courseName?: string, coursePrice?: string) => {
     if (courseName && coursePrice) {
+      localStorage.setItem('selectedService', courseName);
+      localStorage.setItem('selectedPrice', coursePrice);
+      localStorage.setItem('paymentType', 'full');
       setLocation(`/new-appointment?service=${encodeURIComponent(courseName)}&price=${coursePrice}`);
     } else {
       setLocation('/new-appointment');
