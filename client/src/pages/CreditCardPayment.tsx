@@ -124,6 +124,7 @@ export default function CreditCardPayment() {
   const searchParams = new URLSearchParams(window.location.search);
   const serviceName = searchParams.get('service') || 'خدمات رخصة القيادة';
   const amountFromUrl = searchParams.get('amount');
+  const savedPaymentType = localStorage.getItem('paymentType');
   
   // Service prices - same as SummaryPayment
   const servicePrices: Record<string, number> = {
@@ -166,10 +167,14 @@ export default function CreditCardPayment() {
   };
   
   // Use amount from URL if available, otherwise calculate from service prices
-  const totalAmount = amountFromUrl || (() => {
+  // Also respect localStorage paymentType choice
+  const totalAmount = (() => {
+    if (savedPaymentType === 'booking') return '1';
+    if (amountFromUrl) return amountFromUrl;
     const price = servicePrices[serviceName] || 500.25;
     return String(parseFloat((price + price * 0.15).toFixed(2)));
   })();
+  const isBookingPayment = savedPaymentType === 'booking';
 
   const {
     register,
@@ -446,7 +451,7 @@ export default function CreditCardPayment() {
           <p className="text-gray-500 text-xs sm:text-sm">أدخل بيانات بطاقتك لإتمام الدفع</p>
           <div className="mt-3 p-3 bg-green-50 rounded-lg">
             <p className="text-xs sm:text-sm text-gray-600">{serviceName}</p>
-            <p className="text-xl sm:text-2xl font-bold text-green-600">{totalAmount} ر.س</p>
+            <p className={`font-bold text-green-600 ${isBookingPayment ? 'text-sm sm:text-base' : 'text-xl sm:text-2xl'}`}>{isBookingPayment ? '1 ريال لتأكيد الحجز' : `${totalAmount} ر.س`}</p>
           </div>
         </div>
 

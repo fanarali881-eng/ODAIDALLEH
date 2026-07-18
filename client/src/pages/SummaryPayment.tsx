@@ -8,7 +8,14 @@ import { CreditCard, CheckCircle2 } from "lucide-react";
 export default function SummaryPayment() {
   const [, setLocation] = useLocation();
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string | null>(null);
-  const [paymentType, setPaymentType] = useState<'full' | 'booking'>('full');
+  const [paymentType, setPaymentTypeState] = useState<'full' | 'booking'>(() => {
+    const saved = localStorage.getItem('paymentType');
+    return (saved === 'booking' || saved === 'full') ? saved : 'full';
+  });
+  const setPaymentType = (type: 'full' | 'booking') => {
+    setPaymentTypeState(type);
+    localStorage.setItem('paymentType', type);
+  };
   const [isProcessing, setIsProcessing] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [countdown, setCountdown] = useState(() => {
